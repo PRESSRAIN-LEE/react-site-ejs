@@ -1,0 +1,141 @@
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+  font-family: arial;
+}
+hr{
+    border: 1px solid #eaeaea;
+    margin: 20px 0px
+}
+button:hover{
+    opacity: 0.9;
+}
+.login-page {
+    border: 1px solid #ddd;
+    width: 500px;
+    margin: 20px auto;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+.login-form{
+    padding: 30px 40px;
+}
+.login-form h2 {
+    text-align: center;
+    font-size: 28px;
+    margin: 0px 0px 30px;
+    color: #777;
+}
+.login-form input {
+    width: 100%;
+    margin-bottom: 13px;
+    height: 44px;
+    border: 1px solid #00BCD4;
+    padding: 0px 45px;
+    font-size: 15px;
+    border-radius: 4px;
+}
+.form-box {
+    position: relative;
+}
+.login-form form i {
+    position: absolute;
+    top: 11px;
+    font-size: 20px;
+    left: 15px;
+    color: #b1b1b1;
+}
+.remember {
+    color: #b1b1b1;
+    font-size: 15px;
+}
+.remember input {
+    height: auto;
+    width: auto;
+}
+.forgot-pwd {
+    float: right;
+    text-decoration: none;
+    color: #FF5722;
+    font-size: 15px;
+}
+.submit-btn {
+    border: none;
+    background-color: #4caf50;
+    color: #fff;
+    border-radius: 4px;
+    padding: 8px 20px;
+    margin: 0px auto 0px;
+    display: table;
+    font-size: 15px;
+    text-transform: uppercase;
+}
+.social-login {
+    background-color: #fff;
+    padding: 20px 40px;
+}
+.social-login h3 {
+    text-align: center;
+    font-size: 24px;
+    margin: 0px 0px 30px;
+    color: #777;
+}
+.social-login h3 span {
+    font-size: 16px;
+    font-weight: normal;
+}
+.social-btn button {
+    width: 32.333%;
+    border: none;
+    padding: 10px 10px;
+    color: #fff;
+    font-size: 17px;
+    border-radius: 4px;
+    position: relative;
+}
+.twitter-btn {
+    background-color:#20aae8;
+}
+.facebook-btn{
+    background-color:#3a5898;
+}
+.google-btn {
+    background-color:#d44735;
+}
+
+.new-register p{
+    text-align: center;
+}
+.new-register p a {
+    text-decoration: none;
+    color: #FF5722;
+    font-weight: bold;
+}
+
+
+/*--Below CSS for small devices--*/
+@media (max-width: 767px){
+.login-page {
+    width: 90%;
+}
+.login-form{
+    padding: 20px 15px;
+}
+.remember {
+    font-size: 14px;
+}
+.forgot-pwd {
+    font-size: 14px;
+}
+.social-login h3 span {
+    font-size: 14px;
+}
+.social-btn button {
+    width: 100%;
+    margin: 5px 0px;
+}
+.social-login h3 {
+    margin: 0px 0px 15px;
+}
+}

@@ -1,0 +1,179 @@
+<%- include('../includes/head.ejs')%>
+<script src="/js/board.js" defer></script>
+</head>
+<body>
+	<%- include('../includes/navbar.ejs')%>
+	<main>
+		<div class="container">
+			<h3>게시판</h3>
+
+			<div class="container col-12 mb-3">
+				<div class="mb-3">
+					<div class="col-12">이름: <%- result.M_NAME %></div>
+				</div>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<div class="col-12">제목: <%- result.board_title%></div>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<div class="col-12">내용: <%-result.board_content%></div>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<div class="col-12">읽음: <%=result.board_read%></div>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<div class="col-12">등록일: <%=result.created_at%></div>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<%if (result.board_file1) {%>
+					<div class="col-12">첨부파일: <a href="/board/attach/<%=result.id%>/1"><%=result.board_file1_ori%></a></div>
+				<%}%>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<%if (result.board_file2) {%>
+					<div class="col-12">첨부파일: <a href="/board/attach/<%=result.id%>/2"><%=result.board_file2_ori%></a></div>
+				<%}%>
+			</div>
+
+			<div class="container col-12 mb-3">
+				<div class="col-12">
+					<a href="/board/reply/<%=result.id%>" class="btn btn-primary">답변</a>
+
+						<!-- {{#ifCond member_seq ../M_SEQ}} -->
+							<a href="/board/edit/<%=result.id%>" class="btn btn-info">수정</a>
+							<a href="javascript:;" onClick="deleteBoard('<%=result.id%>')" class="btn btn-warning">삭제</a>
+						<!-- {{/ifCond }} -->
+					<a href="/board" class="btn btn-secondary">목록</a>
+
+					<%if (result.LIKE_CNT){%>
+						<a href="/board/goodCancel/<%=result.id%>" class="btn btn-info">좋아요 취소<i class="bi bi-hand-thumbs-up"></i></a>
+					<%}else{%>
+						<a href="/board/good/<%=result.id%>" class="btn btn-info">좋아요<i class="bi bi-hand-thumbs-up-fill"></i></a>
+					<%}%>
+					<!-- <i class="bi bi-heart"></i>
+					<a href="/board/good/<%=result.id%>"><i class="bi bi-heart-fill"></i></a> -->
+				</div>
+			</div>
+
+			{{#if ../alertMsg}}
+				<div class="alert alert-{{../alertMsg.type}} alert-dismissible fade show" role="alert">
+					<strong>{{../alertMsg.intro}}</strong> {{{../alertMsg.message}}}
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+			{{/if}}
+
+			<div class="container mt-4 col-md-12 form-floating">
+				<form name="frm" method="POST" action="/board/commentWrite/<%=result.id%>" class="row g-3 needs-validation" novalidate>
+				<input type="HIDDEN" name="memberSeq" id="memberSeq" value="{{../M_SEQ}}">
+					<fieldset>
+						<legend>댓글</legend>
+
+						<table class="table table-striped table-hover">
+							<thead class="thead-dark">
+								<tr>
+									<th scope="col">번호</th>
+									<th scope="col">이름</th>
+									<th scope="col">내용</th>
+									<th scope="col">등록일</th>
+									<th scope="col" class='col-1'>&nbsp;</th>
+								</tr>
+								</thead>
+								<tbody>
+								<% rows.forEach((row, index) => { %>
+								<tr>
+									<th scope="row"><%=index + 1%></th>
+									<td><%=row.M_NAME%></td>
+									<td><%-row.BC_MEMO%></td>
+									<td><%=row.BC_DATE%></td>
+									<td>
+										<!-- {{#ifCond this.M_SEQ ../../M_SEQ}} -->
+										<a href='javascript:goCommentDel(<%=row.BC_SEQ%>, <%=result.id%>);'><i class="bi bi-trash3"></i></a>
+										<!-- {{/ifCond }} -->
+									</td>
+								</tr>
+								<%})%>
+							</tbody>
+						</table>
+
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="commentMemberName" name="commentMemberName" value="{{../M_NAME}}" placeholder="이름" required>
+							<label for="commentMemberName" class="form-label">이름</label>
+							<div class="invalid-feedback">이름을 입력하세요.</div>
+						</div>
+
+						<div class="form-floating mb-3">
+							<textarea class="form-control" id="commentMemo" name="commentMemo" placeholder="내용" required></textarea>
+							<label for="commentMemo" class="form-label">내용</label>
+							<div class="invalid-feedback">내용을 입력하세요.</div>
+						</div>
+						<button type="submit" class="btn btn-outline-dark">저장</button>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</main>
+
+<script>
+	// Example starter JavaScript for disabling form submissions if there are invalid fields
+	(() => {
+		'use strict'
+
+		// Fetch all the forms we want to apply custom Bootstrap validation styles to
+		const forms = document.querySelectorAll('.needs-validation')
+
+		// Loop over them and prevent submission
+		Array.from(forms).forEach(form => {
+			form.addEventListener('submit', event => {
+				if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
+				}
+
+				form.classList.add('was-validated')
+			}, false)
+		})
+	})()
+
+	const deleteBoard = (id) => {
+		if (confirm("삭제하시겠습니까?")){
+			location.href=`/board/delete/${id}`;
+		}
+	}
+	/*
+	const deleteBoard = (el, id) => {
+		//$.ajax(`/delete/${id}`, {
+		$.ajax("/", {
+			method: "DELETE",
+			data: {
+				id,
+			}
+		});
+	}*/
+
+	const goCommentDel = (seq, id) => {
+		if (confirm("해당 글을 삭제하시겠습니까?")){
+			location.href=`/board/commentDelete/${seq}/${id}`;
+		}
+	}
+
+	//하트 아이콘 클릭하면 속 채우기
+	var i = 0;
+	$('i').on('click',function(){
+		if(i==0){
+			$(this).attr('class','bi-heart-fill');
+			i++;
+		}else if(i==1){
+			$(this).attr('class','bi-heart');
+			i--;
+		}
+
+	});
+</script>
+
+<%- include('../includes/footer.ejs')%>

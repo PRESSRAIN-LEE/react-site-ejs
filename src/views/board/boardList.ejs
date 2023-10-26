@@ -1,0 +1,135 @@
+<%- include('../includes/head.ejs')%>
+<script src="/js/board.js" defer></script>
+</head>
+<body>
+	<%- include('../includes/navbar.ejs')%>
+	<main>
+		<div class="container">
+			<h3>게시판</h3>
+			<div class="row">
+				<div class="col-md-12"></div>
+				<form class="form-inline justify-content-end">
+					<div class="form-group mx-sm-3 mb-2">
+						<input type="text" class="form-control form-control-sm" id="searchText" name="searchText" value="<%=searchText%>" placeholder="검색어">
+					</div>
+					<button type="button" class="btn btn-sm btn-primary mb-2" id="btnSearch">검색</button>
+				</form>
+		
+				<div class="row">
+					<div class="col">총 <%=rowsCnt%>건 <%=pagination.page%> / <%=pagination.pageCount%>페이지</div>
+				</div>
+				
+				<%if(alertMsg){%>
+					<div class="alert alert-<%-alertMsg.type%> alert-dismissible fade show" role="alert">
+					<strong><%-alertMsg.intro%></strong> <%-alertMsg.message%>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+				<%}%>
+		
+				<table class="table table-striped table-hover">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">번호</th>
+							<th scope="col">이름</th>
+							<th scope="col">아이디</th>
+							<th scope="col">제목</th>
+							<th scope="col">파일</th>
+							<th scope="col">등록일</th>
+							<th scope="col">조회</th>
+							<th scope="col" class='col-1'>&nbsp;</th>
+						</tr>
+						</thead>
+						<tbody>
+						<% rows.forEach((row, index) => {
+							rowNum = rowsCnt - (pagination.pageSize * (pagination.page - 1)) - index
+						%>
+						<tr>
+							<th scope="row"><%=rowNum%></th>
+							<td><%=row.M_NAME%></td>
+							<td><%=row.M_ID%></td>
+							<td>
+								<a href='/board/read/<%=row.id%>'>
+									<% for(var i = 0; i < row.ref_level; i++){%> &nbsp; <%}%>
+									<%-row.board_title%>
+									[<%=row.COMMENT_CNT%>]
+								</a>
+							</td>
+							<td>
+							<%if (row.board_file1){%>
+								<i class="bi bi-paperclip"></i>
+							<%}%>
+							<% if (!row.board_file2){%>
+								<i class="bi bi-paperclip"></i>
+							<% } %>
+							</td>
+							<td><%=row.created_at%></td>
+							<td><%=row.board_read%></td>
+							<td><a href='javascript:deleteBoard(<%=row.id%>);' class="btn btn-sm btn-danger">삭제</a></td>
+						</tr>
+						<%})%>
+					</tbody>
+				</table>
+			</div>
+			<div class="d-flex justify-content-end">
+				<a class="btn btn-primary" href="/board/write" role="button">글쓰기</a>
+			</div>
+
+			<!-- 페이지 -->
+			<%
+				//페이징 처리에 사용되는 변수 및 계산(순서도 중요함)
+				var currentPage = pagination.page; //현재 페이지  
+				//처음에 들어오면 1이지만, 페이지 링크를 누른 사람은 해당 페이지 번호를 
+				//봐야하므로 currentPage 값을 전송된 파라미터 값으로 대체하자!
+				//if(params.currentPage != undefined){ //넘어온 변수가 있다면.. 그 값으로 대체 
+				//  currentPage = params.currentPage;
+				//}
+
+				let totalRecord = rowsCnt; 							//총 레코드 수 
+				let pageSize = pagination.pageSize; 				//한 페이지당 보여질 레코드 수
+				let totalPage = Math.ceil(totalRecord / pageSize); 	//총 페이지 수 
+				let blockSize = pagination.pageBlock; 				//블럭당 보여질 페이지 수 
+				let firstPage = currentPage - (currentPage - 1) % blockSize; 	//블럭당 시작 페이지 
+				let lastPage = firstPage + (blockSize - 1); 					//블럭당 끝 페이지 
+				let num = totalRecord - (currentPage - 1) * pageSize; 			//페이지당 시작 번호
+			%>
+
+			<!-- <%//="넘어온 페이지 번호 : "+pagination.page%><br>
+			<%//="currentPage : "+currentPage%><br>
+			<%//="totalRecord : "+totalRecord%><br>
+			<%//="pageSize : "+pageSize%><br>
+			<%="totalPage : "+totalPage%><br>
+			<%//="blockSize : "+blockSize%><br>
+			<%//="lastPage : "+lastPage%><br>
+			<%//="firstPage : "+firstPage%><br>
+			<%//="firstPage : "+((firstPage - 1) <= 1)%><br> -->
+
+			<nav aria-label="Page navigation example">
+				<ul class="pagination justify-content-center">
+					<li class="page-item <%if((currentPage) <= 1){%> disabled <%}%>"><a href="?page=1&searchText=<%-searchText%>" class="page-link">First</a></li>
+
+					<li class="page-item <%if((firstPage - 1) <= 1){%> disabled <%}%>"><a href="?page=<%=firstPage-1%>&searchText=<%-searchText%>" class="page-link">Prev</a></li>
+
+					<%for(var i = firstPage; i <= lastPage; i++){%>
+						<%if(i > totalPage)break;	//총 페이지 수를 넘어서면 멈춘다%> 
+						<li class="page-item <%if(currentPage == i){%> active <%}%>"><a href="?page=<%=i%>&searchText=<%-searchText%>" class="page-link"><%=i%></a></li>
+					<%}%>
+					
+					<li class="page-item <%if((lastPage + 1) > totalPage){%> disabled <%}%>"><a href="?page=<%=lastPage + 1%>&searchText=<%-searchText%>" class="page-link">Next</a></li>
+
+					<li class="page-item <%if(currentPage == totalPage){%> disabled <%}%>"><a href="?page=<%=totalPage%>&searchText=<%-searchText%>" class="page-link">Last</a></li>
+				</ul>
+			</nav>
+			<!-- 페이지 -->
+		</div>
+	</main>
+
+<script>
+const deleteBoard = (id) => {
+	///board/delete/
+	if(confirm("삭제 하시겠습니까?")){
+		location.href=`/board/delete/${id}`;
+	}
+};
+</script>
+
+<%- include('../includes/footer.ejs')%>

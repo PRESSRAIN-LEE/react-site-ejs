@@ -1,0 +1,84 @@
+<%- include('../includes/head.ejs')%>
+<link rel="stylesheet" href="/css/member.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.2/css/all.css">
+</head>
+<body>
+	<%- include('../includes/navbar.ejs')%>
+	<main>
+		<div class="container form-floating">
+			<div class="login-page">
+				<div class="login-form">
+					<h2>Login</h2>
+					<form name="frm" method="POST" action="/member/login" class="row g-3 needs-validation" novalidate>
+						<div class="form-box form-floating">
+							<input type="text" class="form-control" id="memberID" name="memberID" value="master" placeholder="아이디" required>
+							<label for="memberID" class="form-label">아이디</label>
+							<div class="invalid-feedback">아이디를 입력하세요.</div>
+						</div>
+						<div class="form-box form-floating">
+							<input type="password" class="form-control" id="memberPass" name="memberPass" value="123456" placeholder="비밀번호" required>
+							<label for="memberPass" class="form-label">비밀번호</label>
+							<div class="invalid-feedback">비밀번호를 입력하세요.</div>
+						</div>
+						
+						<div class="form-box">
+							<label class="remember">
+								<input type="checkbox" name="remember"> 아이디 저장
+							</label>
+						</div>
+
+						<div class="form-box form-floating">
+							<button type="submit" class="submit-btn btn btn-outline-dark">로그인</button>
+						</div>
+
+						<div class="mb-3">
+							<a href="/member/forgotId" class="btn btn-outline-info mb-1">ID를 찾아요.</a>
+							<a href="/member/forgotPw" class="btn btn-outline-danger mb-1">비밀번호를 몰라요.</a>
+							<a href="/member/join" class="btn btn-outline-success mb-1">ID가 없어요.</a>
+						</div>
+					</form>
+				</div>
+
+				<div class="social-login">
+					<h3>Login<br><span>With Social media account</span></h3>
+					<div class="social-btn">
+					<button type="button" class="twitter-btn"><i class="fab fa-twitter-square"></i> Twitter</button>
+					<button type="button" class="facebook-btn"><i class="fab fa-facebook-square"></i> Facebook</button>
+					<button type="button" class="google-btn"><i class="fab fa-google-plus-square"></i> Google+</button>
+					</div><br>
+
+					<hr>
+
+					<div class="new-register">
+						<p>계정이 없나요? <a href="/member/join">회원가입</a></p>
+						<div class="form-box">
+							<button type="submit" class="submit-btn">Register</button>
+						</div>
+					</div>
+				</div>   
+			</div>
+		</div>
+	</main>
+
+	<script>
+		// Example starter JavaScript for disabling form submissions if there are invalid fields
+		(() => {
+			'use strict'
+	
+			// Fetch all the forms we want to apply custom Bootstrap validation styles to
+			const forms = document.querySelectorAll('.needs-validation')
+	
+			// Loop over them and prevent submission
+			Array.from(forms).forEach(form => {
+				form.addEventListener('submit', event => {
+					if (!form.checkValidity()) {
+						event.preventDefault()
+						event.stopPropagation()
+					}
+	
+					form.classList.add('was-validated')
+				}, false)
+			})
+		})()
+	</script>
+<%- include('../includes/footer.ejs')%>

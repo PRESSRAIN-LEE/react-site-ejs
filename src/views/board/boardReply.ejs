@@ -1,0 +1,70 @@
+
+{{#each rows}}
+
+isLogin3: {{ ../isLogin }}
+{{#ifCond ../writeMode "REPLY"}}
+	member_seq: {{ this.member_seq }}
+{{/ifCond }}
+
+<form name="frm" method="POST" action="/board/reply/{{ this.id }}" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+	<input type="TEXT" id="memberSeq" name="memberSeq" {{#if ../isLogin}}value="{{../M_SEQ}}" {{else }} value="{{this.member_seq}}" {{/if }}>
+	<input type="TEXT" id="ref" name="ref" value="{{ref}}">
+	<input type="TEXT" id="ref_level" name="ref_level" value="{{ref_level}}">
+	<input type="TEXT" id="ref_step" name="ref_step" value="{{ref_step}}">
+
+	<div class="col-md-6 form-floating">
+		<input type="text" class="form-control" id="memberName" name="memberName" 
+		{{#if ../isLogin}}
+		value="{{../M_NAME}}"
+		{{else }}
+		value="{{this.member_name}}"
+		{{/if }} 
+		placeholder="이름" required>
+		<label for="memberName" class="form-label">이름</label>
+		<div class="invalid-feedback">이름을 입력하세요.</div>
+	</div>
+
+	<div class="form-floating mb-3">
+		<input type="text" class="form-control" id="boardTitle" name="boardTitle" value="답변: {{ this.board_title }}" placeholder="글 제목" required>
+		<label for="boardTitle" class="form-label">글 제목</label>
+		<div class="invalid-feedback">글의 제목을 입력하세요.</div>
+	</div>
+
+	<div class="form-floating mb-3">
+		<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용">{{ this.board_content }}</textarea>
+		<label for="boardMemo" class="form-label">글 내용</label>
+		<div class="invalid-feedback">내용을 입력하세요.</div>
+	</div>
+
+	<div class="col-md-6">
+		<input type="file" class="form-control" id="boardFile1" name="boardFile1" accept="image/*">
+	</div>
+	<div class="col-md-6">
+		<input type="file" class="form-control" id="boardFile2" name="boardFile2" accept="image/*">
+	</div>
+
+	<div class="col-12">
+		<button class="btn btn-primary" type="submit">저장</button>
+	</div>
+</form>
+{{/each }}
+
+<script>
+	(() => {
+		'use strict'
+
+		const forms = document.querySelectorAll('.needs-validation')
+
+		// Loop over them and prevent submission
+		Array.from(forms).forEach(form => {
+			form.addEventListener('submit', event => {
+				if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
+				}
+
+				form.classList.add('was-validated')
+			}, false)
+		})
+	})()
+</script>

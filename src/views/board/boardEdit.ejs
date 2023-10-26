@@ -1,0 +1,73 @@
+{{#each rows}}
+<form name="frm" method="POST" action="/board/edit/{{ this.id }}" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+	<input type="HIDDEN" class="form-control" id="memberSeq" name="memberSeq" value="{{this.member_seq}}">
+
+	<div class="col-md-6 form-floating">
+		<input type="text" class="form-control" id="memberName" name="memberName" value="{{this.member_name}}" placeholder="이름" required>
+		<label for="memberName" class="form-label">이름</label>
+		<div class="invalid-feedback">이름을 입력하세요.</div>
+	</div>
+
+	<div class="form-floating mb-3">
+		<input type="text" class="form-control" id="boardTitle" name="boardTitle" value="{{ this.board_title }}" placeholder="글 제목" required>
+		<label for="boardTitle" class="form-label">글 제목</label>
+		<div class="invalid-feedback">글의 제목을 입력하세요.</div>
+	</div>
+
+	<div class="form-floating mb-3">
+		<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용">{{ this.board_content }}</textarea>
+		<label for="boardMemo" class="form-label">글 내용</label>
+		<div class="invalid-feedback">내용을 입력하세요.</div>
+	</div>
+
+	<div class="col-md-6">
+		<input type="file" class="form-control" id="boardFile1" name="boardFile1" accept="image/*">
+		{{#if this.board_file1 }}
+			<a href="/board/attach/{{ this.id }}/1">{{this.board_file1_ori}}</a>
+			<a href="javascript:goFileDel({{ this.id }}, 1);"><i class="bi bi-file-x"></i></a>
+		{{/if }}
+	</div>
+	<div class="col-md-6">
+		<input type="file" class="form-control" id="boardFile2" name="boardFile2" accept="image/*">
+		{{#if this.board_file2 }}
+			<a href="/board/attach/{{ this.id }}/2">{{this.board_file2_ori}}</a>
+			<a href="javascript:goFileDel({{ this.id }}, 2);"><i class="bi bi-file-x"></i></a>
+		{{/if }}
+	</div>
+
+	<div class="col-12">
+		{{#ifCond member_seq ../M_SEQ}}
+		<button class="btn btn-primary" type="submit">저장</button>
+		{{/ifCond }}
+		<a href="/board" class="btn btn-secondary">목록</a>
+	</div>
+</form>
+{{/each }}
+
+<script>
+	// Example starter JavaScript for disabling form submissions if there are invalid fields
+	(() => {
+		'use strict'
+
+		// Fetch all the forms we want to apply custom Bootstrap validation styles to
+		const forms = document.querySelectorAll('.needs-validation')
+
+		// Loop over them and prevent submission
+		Array.from(forms).forEach(form => {
+			form.addEventListener('submit', event => {
+				if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
+				}
+
+				form.classList.add('was-validated')
+			}, false)
+		})
+	})()
+
+	const goFileDel = (seq, order) => {
+		if (confirm("해당 파일을 삭제하시겠습니까?")){
+			location.href=`/board/fileDelete/${seq}/${order}`;
+		}
+	}
+</script>
