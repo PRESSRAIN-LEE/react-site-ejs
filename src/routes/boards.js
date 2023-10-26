@@ -3,6 +3,28 @@
 const express = require('express');
 const app = express();
 
+//전역 세션
+app.use(function (req, res, next) {
+	//console.log("req.session.isLogin : ", req.session.isLogin);
+	res.locals.isLogin = false;
+	res.locals.loginInfo = "";
+	res.locals.loginSeq = "0";
+	res.locals.loginName = "";
+	if(req.session.isLogin){
+		res.locals.isLogin = req.session.isLogin;
+		res.locals.loginInfo = req.session.loginInfo;
+		res.locals.loginSeq = req.session.loginInfo.M_SEQ;
+		res.locals.loginName = req.session.loginInfo.M_NAME;
+	}
+	
+	res.locals.session = req.session;
+
+	//메시지 창
+	res.locals.alertMsg = req.session.alertMsg;
+	delete req.session.alertMsg;
+	next();
+});
+
 const boardsController = require('../controllers/boardsController');
 
 const router = express.Router();

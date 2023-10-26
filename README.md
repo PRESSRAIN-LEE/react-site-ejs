@@ -6,6 +6,8 @@
 5. npm install --save bcrypt				//비밀번호 암호화
 6. npm install --save express-session		//세션
 7. npm install --save express-fileupload 	//첨부파일 (https://www.youtube.com/watch?v=hyJiNTFtQic)
+8. npm install --save fs mime iconv-lite	//파일 다운로드 관련 3총사
+
 
 
 5. npm install pagination-react-js			//pagination - 사용 안함 - uninstall

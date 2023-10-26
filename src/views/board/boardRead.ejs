@@ -45,10 +45,11 @@
 				<div class="col-12">
 					<a href="/board/reply/<%=result.id%>" class="btn btn-primary">답변</a>
 
-						<!-- {{#ifCond member_seq ../M_SEQ}} -->
-							<a href="/board/edit/<%=result.id%>" class="btn btn-info">수정</a>
-							<a href="javascript:;" onClick="deleteBoard('<%=result.id%>')" class="btn btn-warning">삭제</a>
-						<!-- {{/ifCond }} -->
+					<%if(loginSeq == result.member_seq){%>
+						<a href="/board/edit/<%=result.id%>" class="btn btn-info">수정</a>
+						<a href="javascript:;" onClick="deleteBoard('<%=result.id%>')" class="btn btn-warning">삭제</a>
+					<%}%>
+
 					<a href="/board" class="btn btn-secondary">목록</a>
 
 					<%if (result.LIKE_CNT){%>
@@ -61,16 +62,16 @@
 				</div>
 			</div>
 
-			{{#if ../alertMsg}}
-				<div class="alert alert-{{../alertMsg.type}} alert-dismissible fade show" role="alert">
-					<strong>{{../alertMsg.intro}}</strong> {{{../alertMsg.message}}}
+			<%if(alertMsg){%>
+				<div class="alert alert-<%-alertMsg.type%> alert-dismissible fade show" role="alert">
+					<strong><%-alertMsg.intro%></strong><%-alertMsg.message%>
 					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 				</div>
-			{{/if}}
+			<%}%>
 
 			<div class="container mt-4 col-md-12 form-floating">
 				<form name="frm" method="POST" action="/board/commentWrite/<%=result.id%>" class="row g-3 needs-validation" novalidate>
-				<input type="HIDDEN" name="memberSeq" id="memberSeq" value="{{../M_SEQ}}">
+				<input type="HIDDEN" name="memberSeq" id="memberSeq" value="<%=loginSeq%>">
 					<fieldset>
 						<legend>댓글</legend>
 
@@ -92,9 +93,9 @@
 									<td><%-row.BC_MEMO%></td>
 									<td><%=row.BC_DATE%></td>
 									<td>
-										<!-- {{#ifCond this.M_SEQ ../../M_SEQ}} -->
+										<%if(row.M_SEQ === loginSeq){%>
 										<a href='javascript:goCommentDel(<%=row.BC_SEQ%>, <%=result.id%>);'><i class="bi bi-trash3"></i></a>
-										<!-- {{/ifCond }} -->
+										<%}%>
 									</td>
 								</tr>
 								<%})%>
@@ -102,7 +103,7 @@
 						</table>
 
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" id="commentMemberName" name="commentMemberName" value="{{../M_NAME}}" placeholder="이름" required>
+							<input type="text" class="form-control" id="commentMemberName" name="commentMemberName" value="<%=loginName%>" placeholder="이름" required>
 							<label for="commentMemberName" class="form-label">이름</label>
 							<div class="invalid-feedback">이름을 입력하세요.</div>
 						</div>

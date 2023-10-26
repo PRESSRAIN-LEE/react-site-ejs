@@ -29,8 +29,9 @@ app.use(function (req, res, next) {
 	//console.log("req.session.isLogin : ", req.session.isLogin);
 	res.locals.isLogin = false;
 	res.locals.loginInfo = "";
-	res.locals.loginSeq = "";
+	res.locals.loginSeq = "0";
 	res.locals.loginName = "";
+	res.locals.originalUrl = "";
 	if(req.session.isLogin){
 		res.locals.isLogin = req.session.isLogin;
 		res.locals.loginInfo = req.session.loginInfo;
@@ -47,13 +48,14 @@ app.use(function (req, res, next) {
 });
 
 const isAuth = (req, res, next) => {
+	//console.log("req.originalUrl: ", req.originalUrl);
 	if(req.session.isLogin){
-		console.log("A");
+		//console.log("A");
 		next();
 	}else{
-		console.log("B");
+		//console.log("B");
 		//res.redirect('/member/login');
-		//res.render('member/login');
+		res.render('member/login', {originalUrl: req.originalUrl});
 	}
 }
 
@@ -74,7 +76,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 //라우터
 app.use('/', mainRouter);
 app.use('/member', memberRouter);
-app.use('/board', boardRouter);
+app.use('/board', isAuth, boardRouter);
 
 //DB연결 설정
 // const mysqlConn = require('./db/DbConn')();

@@ -2,6 +2,12 @@
 
 const { useNavigate } = require("react-router-dom");
 
+//파일 업로드 / 다운로드
+const path = require('path');
+const uploadDir = path.join(__dirname, '../../upload/board');
+var mime = require('mime');
+const fs = require('fs');
+
 //DB연결 설정
 const mysqlConn = require('../../db/DbConn')();
 const db = mysqlConn.init();
@@ -116,6 +122,7 @@ exports.view = (req, res) => {
 	, (SELECT COUNT(*) FROM TBL_BOARD_LIKE WHERE B_SEQ = A.id AND M_SEQ = ?) AS LIKE_CNT
 	FROM TBL_BOARD A INNER JOIN TBL_MEMBER B ON A.member_seq = B.M_SEQ 
 	WHERE id = ?; `;
+	
 	//좋아요
 	//const sqlLike = `SELECT * FROM TBL_BOARD_LIKE WHERE B_SEQ = ? AND M_SEQ = ? ; `;
 
@@ -128,15 +135,17 @@ exports.view = (req, res) => {
 						WHERE B_SEQ = ? AND BC_STATE = 'U'
 						ORDER BY A.BC_SEQ DESC; `;
 	//const exec = db.query(sql, [req.session.M_SEQ, id], (err, result, next) => {
-	const exec = db.query(sql, [1, id], (err, result, next) => {
+		//console.log("loginSeq: ", req.session.M_SEQ);
+	const exec = db.query(sql, [req.session.M_SEQ, id], (err, result, next) => {
 		if(err) throw err;
 		db.query(sqlComment, [id], (err, rows, next) => {
 			if(err) throw err;
 			//console.log("rows++: ", JSON.stringify(rows));
-			console.log("result: ", result);
+			//console.log("result: ", result);
 			res.render('board/boardRead', { pageTitle: "게시판", result: result[0], rows: rows });
 		});
 	});
+	//console.log("SQL: ", exec.sql);
 };
 
 //게시판 글 읽기 조회 증가
@@ -159,19 +168,22 @@ exports.readCnt = (req, res) => {
 exports.fileDownload = (req, res) => {
 	//res.send("fileDownload");
 	const { id, order } = req.params;
-	const upload_folder = 'upload/board/';
-	var getDownloadFilename = require('../../lib/getDownloadFilename').getDownloadFilename;
+	//const upload_folder = 'upload/board/';
+	var getDownloadFilename = require('../../public/lib/getDownloadFilename').getDownloadFilename;
 	
+	//console.log("uploadDir: ", uploadDir);
+	//console.log("upload_folder: ", upload_folder);
+	//return;
 	//테이블에서 seq로 파일 검색
 	const sql = `SELECT board_file1, board_file1_ori, board_file2, board_file2_ori FROM TBL_BOARD WHERE id = ? `
 	db.query(sql, [id], (err, results) => {
 		//if(err) throw err;
 		try {
-			let file1 = upload_folder + results[0].board_file1;
-			let file1Ori = upload_folder + results[0].board_file1_ori;
-			let file2 = upload_folder + results[0].board_file2;
-			let file2Ori = upload_folder + results[0].board_file2_ori;
-
+			let file1 = uploadDir + "/" + results[0].board_file1;
+			let file1Ori = uploadDir + "/"  + results[0].board_file1_ori;
+			let file2 = uploadDir + "/"  + results[0].board_file2;
+			let file2Ori = uploadDir + "/"  + results[0].board_file2_ori;
+			//console.log("file2Ori: ", file2Ori);
 			let file = "";
 			let fileOri = "";
 			switch(order){
@@ -195,12 +207,30 @@ exports.fileDownload = (req, res) => {
 				var filestream = fs.createReadStream(file);
 				filestream.pipe(res);
 			}else{
-				res.send('해당 파일이 없습니다.');  
+				//res.send('<alert>해당 파일이 없습니다.</alert>');
+				res.send(`<script>alert('해당 파일이 없습니다.');location.href='/board/read/${id}'</script>`);
+				// req.session.alertMsg = {
+				// 	type: 'warning',
+				// 	intro: '[파일 없음]',
+				// 	message: '해당 파일이 없습니다.',
+				// };
+				//res.redirect('/board/view/'+id, {alertMsg: req.session.alertMsg});
+				//res.render('board/boardRead', {pageTitle: "게시판", alertMsg: req.session.alertMsg});
 				return;
 			}
 		}catch(e){
-			console.log(e);
-			res.send('파일을 다운로드하는 중에 에러가 발생하였습니다.');
+			//console.log(e);
+			//res.send('파일을 다운로드하는 중에 에러가 발생하였습니다.');
+			res.send(`<script>alert('파일을 다운로드하는 중에 에러가 발생하였습니다.');location.href='/board/read/${id}'</script>`);
+			
+			// req.session.alertMsg = {
+			// 	type: 'danger',
+			// 	intro: '[파일 삭제 성공]',
+			// 	message: '파일을 다운로드하는 중에 에러가 발생하였습니다.',
+			// };
+			//res.redirect(`/board/view/${id}`);
+			//res.render('board/boardRead', {pageTitle: "게시판"});
+				
 			return;
 		}
 	});
