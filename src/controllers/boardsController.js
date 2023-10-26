@@ -388,22 +388,21 @@ exports.writeProc = (req, res) => {
 	});
 };
 
-
 //게시판 글 수정
 exports.edit = (req, res) => {
 	const id = req.params.id;
 	const sql = `SELECT * FROM TBL_BOARD
 	WHERE 1 = 1 
 	AND id = ?`;
-	db.query(sql, [id], (err, rows, next) => {
+	const exec = db.query(sql, [id], (err, result, next) => {
 		if(!err){
-			res.render('../views/board/boardEdit', { rows });
+			res.render('../views/board/boardEdit', { result: result[0] });
 		}else{
 			console.log(err);
 		}
 	});
+	console.log("SQL: ", exec.sql);
 };
-
 
 //게시판 글 수정 저장
 exports.editProc = (req, res) => {
