@@ -5,12 +5,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');		//env
 const session = require('express-session');
+const connectFlash = require('connect-flash');
 
 const app = express();
 dotenv.config();
 
 const port = process.env.PORT || 5002;
 const secret = process.env.SESSION_SECRET || '시크릿 키';
+
 
 //세션
 app.use(session({
@@ -24,14 +26,18 @@ app.use(session({
 	}
 }));
 
+//flash
+app.use(connectFlash());
+
 //전역 세션
 app.use(function (req, res, next) {
 	//console.log("req.session.isLogin : ", req.session.isLogin);
 	res.locals.isLogin = false;
 	res.locals.loginInfo = "";
-	res.locals.loginSeq = "0";
+	res.locals.loginSeq = "";
 	res.locals.loginName = "";
 	res.locals.originalUrl = "";
+	res.locals.flashMessages = req.flash();
 	if(req.session.isLogin){
 		res.locals.isLogin = req.session.isLogin;
 		res.locals.loginInfo = req.session.loginInfo;
@@ -42,8 +48,12 @@ app.use(function (req, res, next) {
 	res.locals.session = req.session;
 
 	//메시지 창
-	res.locals.alertMsg = req.session.alertMsg;
-	delete req.session.alertMsg;
+	if(req.session.alertMsg){
+		res.locals.alertMsg = req.session.alertMsg;
+		delete req.session.alertMsg;
+	}else{
+		res.locals.alertMsg = "";
+	}
 	next();
 });
 
@@ -78,17 +88,20 @@ app.use('/', mainRouter);
 app.use('/member', memberRouter);
 app.use('/board', isAuth, boardRouter);
 
-//DB연결 설정
-// const mysqlConn = require('./db/DbConn')();
-// const db = mysqlConn.init();
-// db.connect((err) =>{
-// 	//console.error(err);
-// 	//if(err) throw err;
-// 	// if (err) {
-// 	// 	console.error("[MYSQL] Error on Connection: " + err);
-// 	// 	return;
-// 	// }
-// 	console.log('Connected AS ID ' + db.threadId);
+//커스텀 404 페이지
+app.use(function(req, res, next){
+	//res.type('text/plain');
+	//res.status(404);
+	//res.send('404 - Not Found');
+	res.render('404');
+});
+// 커스텀 500 페이지
+// app.use(function(err, req, res, next){
+// 	console.error(err.stack);
+// 	// res.type('text/plain');
+// 	// res.status(500);
+// 	// res.send('500 - Server Error');
+// 	res.render('500');
 // });
 
 app.listen(port, () => console.log(`ejb_서버 시작 port ${port}`));
