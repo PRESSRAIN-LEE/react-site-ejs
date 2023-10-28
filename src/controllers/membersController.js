@@ -9,7 +9,12 @@ const db = mysqlConn.init();
 //로그인
 exports.login = (req, res) => {
 	//console.log(req.originalUrl);
-	res.render('member/login', {pageTitle: "로그인"});
+	//req.flash('success','성공메시지');
+	const flashMessages=req.flash('success');
+	console.log("flashMessages: ", req.flash("loginMessage"));
+
+	res.render('member/login', {pageTitle: "로그인", flashMessages});
+	//req.flash({"flashMessages":"성공메시지"}); //res.locals.flashMessages.success= "성공메시지"
 };
 
 //로그인 처리
@@ -57,9 +62,11 @@ exports.loginProc = (req, res) => {
 				
 				//res.render('../views/home', {login: result[0], isLogin: true});
 				if(returnUrl){
-					res.send(`<script>alert('로그인 되었습니다.');location.href='${returnUrl}'</script>`);
+					//res.send(`<script>alert('로그인 되었습니다.');location.href='${returnUrl}'</script>`);
+					res.send(`<script>location.href='${returnUrl}'</script>`);
 				}else{
-					res.send(`<script>alert('로그인 되었습니다.');location.href='/'</script>`);
+					//res.send(`<script>alert('로그인 되었습니다.');location.href='/'</script>`);
+					res.send(`<script>location.href='/'</script>`);
 				}
 				
 				//res.redirect('/');
@@ -76,10 +83,20 @@ exports.loginProc = (req, res) => {
 					intro: 'WARNING',
 					message: '비밀번호가 일치하지 않습니다.',
 				};
+				// const alertMsg = {
+				// 	type: 'warning',
+				// 	intro: 'WARNING',
+				// 	message: '비밀번호가 일치하지 않습니다.',
+				// };
 
+				//const flashMessages=req.flash("alertMsg");
+				//console.log("flashMessages1: ", flashMessages);
+				//req.flash('flashMessages', 'flash 메시지');
+
+				//req.flash('message', 'flash 메시지'); //저장
 				//console.log("비밀번호 불일치");
-				//res.redirect('/member/login');
-				res.redirect(303, '/member/login');
+				//res.render('member/login', {flashMessages: req.flash() });
+				res.redirect('/member/login');
 				// return res.json({
 				// 	loginSuccess: false,
 				// 	message: "비밀번호가 일치하지 않습니다."

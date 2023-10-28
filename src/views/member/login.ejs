@@ -9,6 +9,14 @@
 			<div class="login-page">
 				<div class="login-form">
 					<h2>Login</h2>
+
+					<%if (alertMsg) {%>
+						<div class="alert alert-<%-alertMsg.type%> alert-dismissible fade show" role="alert">
+							<strong><%-alertMsg.intro%></strong> <%-alertMsg.message%>
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+						</div>
+					<%}%>
+					
 					<form name="frm" method="POST" action="/member/login" class="row g-3 needs-validation" novalidate>
 						<input type="HIDDEN" name="returnUrl" id="returnUrl" value="<%=originalUrl ? originalUrl : ''%>">
 						<div class="form-box form-floating">
