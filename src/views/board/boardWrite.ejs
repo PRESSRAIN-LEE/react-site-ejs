@@ -6,21 +6,21 @@
 		<div class="container">
 			<h3>게시판 글쓰기</h3>
 			<form name="frm" method="POST" action="/board/write" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
-				<input type="TEXT" id="memberSeq" name="memberSeq" value="{{M_SEQ}}">
+				<input type="TEXT" id="memberSeq" name="memberSeq" value="<%=loginSeq%>">
 				<div class="col-md-6 form-floating">
-					<input type="text" class="form-control" id="memberName" name="memberName" value="{{M_NAME}}" placeholder="이름" required>
+					<input type="text" class="form-control" id="memberName" name="memberName" value="<%=loginName%>" placeholder="이름" required>
 					<label for="memberName" class="form-label">이름</label>
 					<div class="invalid-feedback">이름을 입력하세요.</div>
 				</div>
 
 				<div class="form-floating mb-3">
-					<input type="text" class="form-control" id="boardTitle" name="boardTitle" value="{{ this.board_title }}" placeholder="글 제목" required>
+					<input type="text" class="form-control" id="boardTitle" name="boardTitle" placeholder="글 제목" required>
 					<label for="boardTitle" class="form-label">글 제목</label>
 					<div class="invalid-feedback">글의 제목을 입력하세요.</div>
 				</div>
 
 				<div class="form-floating mb-3">
-					<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용">{{ this.board_content }}</textarea>
+					<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용"></textarea>
 					<label for="boardMemo" class="form-label">글 내용</label>
 					<div class="invalid-feedback">내용을 입력하세요.</div>
 				</div>

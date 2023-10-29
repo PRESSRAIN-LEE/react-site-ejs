@@ -69,6 +69,7 @@
 				</div>
 			<%}%>
 
+			<!-- 댓글 -->
 			<div class="container mt-4 col-md-12 form-floating">
 				<form name="frm" method="POST" action="/board/commentWrite/<%=result.id%>" class="row g-3 needs-validation" novalidate>
 				<input type="HIDDEN" name="memberSeq" id="memberSeq" value="<%=loginSeq%>">
@@ -86,7 +87,7 @@
 								</tr>
 								</thead>
 								<tbody>
-								<% rows.forEach((row, index) => { %>
+								<% rows[0].forEach((row, index) => { %>
 								<tr>
 									<th scope="row"><%=index + 1%></th>
 									<td><%=row.M_NAME%></td>
@@ -117,6 +118,32 @@
 					</fieldset>
 				</form>
 			</div>
+			<!-- 댓글 -->
+
+			<!-- History -->
+			<div class="container mt-4 col-md-12 form-floating">
+				<table class="table table-striped table-hover">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">번호</th>
+							<th scope="col">이름</th>
+							<th scope="col">작업내용</th>
+							<th scope="col">날짜</th>
+						</tr>
+						</thead>
+						<tbody>
+						<% rows[1].forEach((historyRow, index) => { %>
+						<tr>
+							<th scope="row"><%=index + 1%></th>
+							<td><%=historyRow.M_NAME%></td>
+							<td><%-historyRow.BH_WORK_VALUE%></td>
+							<td><%=historyRow.BH_DATE%></td>
+						</tr>
+						<%})%>
+					</tbody>
+				</table>
+			</div>
+			<!-- History -->
 		</div>
 	</main>
 

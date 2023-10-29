@@ -1,16 +1,17 @@
 "use strict";
 
-const { useNavigate } = require("react-router-dom");
-
 //파일 업로드 / 다운로드
 const path = require('path');
 const uploadDir = path.join(__dirname, '../../upload/board');
+const { v4: uuidv4 } = require('uuid');
 var mime = require('mime');
 const fs = require('fs');
 
 //DB연결 설정
 const mysqlConn = require('../../db/DbConn')();
 const db = mysqlConn.init();
+
+const boardInsert = require('../module/board/boardHistory');	//모듈을 폴더로불러온다.
 
 //####################게시판####################
 //리스트
@@ -24,7 +25,6 @@ exports.main2 = (req, res) => {
 	//const movePage = useNavigate("/board");
 	//console.log("controllers.list-1");
 };
-
 exports.list = (req, res) => {
 	//console.log("req.query: ", req.query);
 	//res.render("board/boardList", {title: "BOARD"});
@@ -48,7 +48,7 @@ exports.list = (req, res) => {
 
 	let sql = "SELECT id, ref_level, ref_step, board_title, board_read, board_file1, board_file2, DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at";
 	sql += ", M_ID, M_NAME ";
-	sql += ", (SELECT COUNT(*) FROM TBL_BOARD_COMMENT WHERE B_SEQ = A.id) AS COMMENT_CNT ";
+	sql += ", (SELECT COUNT(*) FROM TBL_BOARD_COMMENT WHERE B_SEQ = A.id AND BC_STATE = 'U') AS COMMENT_CNT ";
 	sql += "FROM TBL_BOARD A INNER JOIN TBL_MEMBER B ON A.member_seq = B.M_SEQ "
 	sql += "WHERE 1 = 1 ";
 	sql += "AND board_state = 'Y' ";
@@ -83,11 +83,11 @@ exports.list = (req, res) => {
 			//console.log("boardNumList : ", boardNumList);
 			const pageCount = Math.ceil(rows[1][0].CNT/pageSize);
 
-			req.session.alertMsg = {
-				type: 'success',
-				intro: '[글 등록 성공]',
-				message: '글이 등록되었습니다.',
-			};
+			// req.session.alertMsg = {
+			// 	type: 'success',
+			// 	intro: '[글 등록 성공]',
+			// 	message: '글이 등록되었습니다.',
+			// };
 			//console.log(req.session.alertMsg);
 			//let boardNum = (rows[1][0].CNT - (pageSize * (page - 1)))
 			//console.log("pageCount: ", pageCount);
@@ -117,7 +117,7 @@ exports.view = (req, res) => {
 	const id = req.params.id;
 
 	//게시판 글
-	const sql = `SELECT *, DATE_FORMAT(created_at, '%Y-%m-%d %H:%1:%s') AS created_at 
+	const sql = `SELECT *, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') AS created_at 
 	, REPLACE(board_content, '\r', '<BR>') AS board_content 
 	, (SELECT COUNT(*) FROM TBL_BOARD_LIKE WHERE B_SEQ = A.id AND M_SEQ = ?) AS LIKE_CNT
 	FROM TBL_BOARD A INNER JOIN TBL_MEMBER B ON A.member_seq = B.M_SEQ 
@@ -136,12 +136,30 @@ exports.view = (req, res) => {
 						ORDER BY A.BC_SEQ DESC; `;
 	//const exec = db.query(sql, [req.session.M_SEQ, id], (err, result, next) => {
 		//console.log("loginSeq: ", req.session.M_SEQ);
+	
+	//history
+	const sqlHistory = `SELECT (SELECT CASE BH_WORK WHEN 'C' THEN '신규 등록'
+													WHEN 'R' THEN '읽기'
+													WHEN 'U' THEN '수정'
+													WHEN 'D' THEN '삭제'
+													WHEN 'RC' THEN '답변 새글'
+													WHEN 'RE' THEN '복구'
+													WHEN 'CC' THEN '댓글 입력'
+													WHEN 'CD' THEN '댓글 삭제'
+								END) AS BH_WORK_VALUE
+							, DATE_FORMAT(BH_DATE, '%y.%m.%d %H:%i:%s') AS BH_DATE, M_NAME
+						FROM TBL_BOARD_HISTORY A INNER JOIN TBL_MEMBER B ON A.M_SEQ = B.M_SEQ 
+						WHERE B_SEQ = ? ;`;
+	//db.query(sqlHistory, [id], (err, historyRows, next) => {
+	//	if(err) throw err;
+	//});
+
 	const exec = db.query(sql, [req.session.M_SEQ, id], (err, result, next) => {
 		if(err) throw err;
-		db.query(sqlComment, [id], (err, rows, next) => {
+		db.query(sqlComment + sqlHistory, [id, id], (err, rows, next) => {
 			if(err) throw err;
 			//console.log("rows++: ", JSON.stringify(rows));
-			//console.log("result: ", result);
+			console.log("rows: ", rows);
 			res.render('board/boardRead', { pageTitle: "게시판", result: result[0], rows: rows });
 		});
 	});
@@ -271,18 +289,21 @@ exports.fileDelete = (req, res) => {
 	}
 	sqlUpdate += "WHERE id = ? ";
 	db.query(sqlUpdate, [id], (err, results) => {
-		console.log("err: ", err);
 		if(!err){
 			req.session.alertMsg = {
-				type: 'danger',
+				type: 'success',
 				intro: '[파일 삭제 성공]',
 				message: '파일이 삭제되었습니다.',
 			};
-
 			res.redirect(`/board/edit/${id}`);
 		}else{
+			//console.log(err);
+			req.session.alertMsg = {
+				type: 'danger',
+				intro: '[파일 삭제 에러]',
+				message: '파일 삭제에 실패하였습니다.',
+			};
 			res.redirect(`/board/edit/${id}`);
-			console.log(err);
 		}
 	});
 };
@@ -292,10 +313,10 @@ exports.write = (req, res) => {
 	res.render('board/boardWrite', {pageTitle: "게시판"});
 };
 
-
 //게시판 글 쓰기 저장
 exports.writeProc = (req, res) => {
 	if(!req.files || Object.keys(req.files).length === 0 ){
+		//console.log("파일 없음");
 		//return res.status(400).send("파일 없음");
 	}
 
@@ -304,8 +325,7 @@ exports.writeProc = (req, res) => {
 
 	if(req.files){
 		//console.log("files1: ", req.files.boardFile1);
-		//console.log("files2: ", req.files.boardFile2);
-	
+		
 		if (req.files.boardFile1) {
 			const boardFile1 = req.files.boardFile1;
 			//console.log("boardFile1: ", req.files.boardFile1.name);
@@ -315,7 +335,7 @@ exports.writeProc = (req, res) => {
 		}
 		if (req.files.boardFile2) {
 			const boardFile2 = req.files.boardFile2;
-			//console.log("boardFile1: ", req.files.boardFile2.name);
+			//console.log("boardFile2: ", req.files.boardFile2.name);
 			saveFileName2 = `${uuidv4()}${path.extname(boardFile2.name)}`;
 			oriFileName2 = boardFile2.name;
 			boardFile2.mv(path.join(uploadDir, saveFileName2));
@@ -330,11 +350,8 @@ exports.writeProc = (req, res) => {
 	//console.log("saveFileName1: " , saveFileName1);
 	//console.log("boardFile3: " , fileExt);
 	//console.log("uuidv4: " , uuidv4());
-
 	// uploadPath = __dirname + '/../../upload/' + boardFile1.name;
 	// uploadPath = __dirname + '/../../upload/' + saveFileName;
-	// console.log("uploadPath: " , uploadPath);
-
 	/*
 	boardFile1.mv(path.join(uploadDir, saveFileName), (err) => {
 	//boardFile1.mv(uploadPath, function (err){
@@ -346,13 +363,14 @@ exports.writeProc = (req, res) => {
 	const { memberName, boardTitle, boardMemo } = req.body;
 	const memberSeq = req.session.M_SEQ;
 	let maxRef = 0;
+
 	const sqlMax = "SELECT IFNULL(MAX(ref), 0) + 1 AS MAX_REF FROM TBL_BOARD";
 	db.query(sqlMax, (err, result, next) => {
 		//console.log("완료:", result[0].MAX_REF);
 		if(!err){
-		maxRef = result[0].MAX_REF;
-		//res.send(maxRef);
-		//console.log("완료1:", maxRef);
+			maxRef = result[0].MAX_REF;
+			//res.send(maxRef);
+			//console.log("완료1:", maxRef);
 		}
 	});
 	
@@ -366,7 +384,7 @@ exports.writeProc = (req, res) => {
 	//							SELECT IFNULL(MAX(ref), 0) + 1, 0, 0, ?, ?, ?, ? FROM TBL_BOARD
 	//`;
 	
-	db.query(sql, [memberSeq, memberName, boardTitle, boardMemo, saveFileName1, oriFileName1, saveFileName2, oriFileName2], (err, rows, next) => {
+	const exec = db.query(sql, [memberSeq, memberName, boardTitle, boardMemo, saveFileName1, oriFileName1, saveFileName2, oriFileName2], (err, rows, next) => {
 		if(!err){
 			//console.log("완료2:", rows.insertId);
 			const sqlUpdate = `UPDATE TBL_BOARD SET ref = ?
@@ -381,10 +399,17 @@ exports.writeProc = (req, res) => {
 				message: '글이 등록되었습니다.',
 			};
 
-			res.redirect(303, '/board');
+			res.redirect(303, '/board/list');
 		}else{
 			console.log(err);
+			req.session.alertMsg = {
+				type: 'danger',
+				intro: '[글 등록 에러]',
+				message: '글 등록 중 오류가 발생하였습니다.',
+			};
+			res.redirect(303, '/board/list');
 		}
+		console.log("SQL: ", exec.sql);
 	});
 };
 
@@ -401,7 +426,7 @@ exports.edit = (req, res) => {
 			console.log(err);
 		}
 	});
-	console.log("SQL: ", exec.sql);
+	//console.log("SQL: ", exec.sql);
 };
 
 //게시판 글 수정 저장
@@ -414,8 +439,6 @@ exports.editProc = (req, res) => {
 
 	if(req.files){
 		//console.log("files1: ", req.files.boardFile1);
-		//console.log("files2: ", req.files.boardFile2);
-	
 		if (req.files.boardFile1) {
 			const boardFile1 = req.files.boardFile1;
 			//console.log("boardFile1: ", req.files.boardFile1.name);
@@ -462,8 +485,18 @@ exports.editProc = (req, res) => {
 				, board_title = ?, board_content = ?
 				, board_file1 = ?, board_file1_ori = ?
 				, board_file2 = ?, board_file2_ori = ? 
-				WHERE id = ?`;
+				, updated_at = now() 
+				WHERE id = ? ;`;
 	
+	//게시판 작업 히스토리 저장
+	//console.log("CC: ", boardInsert.fnInsert(id, memberSeq, 'U'));
+	boardInsert.fnInsert(id, memberSeq, 'U');
+
+	// const historySql = `INSERT INTO TBL_BOARD_HISTORY SET B_SEQ = ?, M_SEQ = ?, BH_WORK = 'U' ;`;
+	// db.query(historySql, [id, memberSeq], (err, rows, next) => {
+	// 	//아무 작업 없음
+	// });
+
 	db.query(sql, [memberSeq, memberName, boardTitle, boardMemo, saveFileName1, oriFileName1, saveFileName2, oriFileName2, id], (err, rows, next) => {
 		if(!err){
 			req.session.alertMsg = {
@@ -472,14 +505,20 @@ exports.editProc = (req, res) => {
 				message: '글이 수정되었습니다.',
 			};
 
-			res.redirect(303, '/board');
+			res.redirect(303, '/board/list');
 		}else{
 			console.log(err);
+			req.session.alertMsg = {
+				type: 'danger',
+				intro: '[글 수정 실패]',
+				message: '글 수정에 오류가 발생했습니다.',
+			};
+
+			res.redirect(303, '/board/list');
 		}
 		//console.log("완료:", rows);
 	});
 };
-
 
 //게시판 글 답변
 exports.reply = (req, res) => {
@@ -489,7 +528,7 @@ exports.reply = (req, res) => {
 	const sql = `SELECT * FROM TBL_BOARD
 	WHERE 1 = 1 
 	AND id = ?`;
-	db.query(sql, [id], (err, rows, next) => {
+	db.query(sql, [id], (err, result, next) => {
 		if(err) throw err;
 		// if(err){
 		// 	res.type('text/plain');
@@ -500,15 +539,13 @@ exports.reply = (req, res) => {
 		
 		//if(err) console.error("error: ", err); res.status(500).send(err.message);
 		//if(!err){
-			res.render('../views/board/boardReply', { rows, writeMode: "REPLY" });
-			//console.log("rows: ", rows);
+			res.render('../views/board/boardReply', { result: result[0], writeMode: "REPLY" });
 		//}else{
 			//console.log(err);
 			//res.status(500).send(err.message);
 		//}
 	});
 };
-
 
 //게시판 글 답변 저장
 exports.replyProc = (req, res) => {
@@ -577,7 +614,6 @@ exports.replyProc = (req, res) => {
 	});
 };
 
-
 //게시판 삭제(update)
 exports.deleteProc = (req, res) => {
 	//const { id } = req.params;
@@ -587,8 +623,6 @@ exports.deleteProc = (req, res) => {
 	AND id = ?`;
 	db.query(sql, [req.params.id], (err, rows, next) => {
 		if(!err){
-			//console.log(rows);
-
 			//let delResult = [
 			//	({ deleteSuccess: true, message: "삭제되었습니다." })
 				//return [{
@@ -601,11 +635,11 @@ exports.deleteProc = (req, res) => {
 
 			req.session.alertMsg = {
 				type: 'danger',
-				//intro: 'Validation error!',
+				intro: '[글 삭제 성공]',
 				message: '삭제되었습니다.',
 			};
 
-			res.redirect(303, '/board');
+			res.redirect(303, '/board/list');
 			//res.redirect(303, next);
 		}else{
 			console.log(err);
@@ -688,4 +722,5 @@ exports.goodLikeCancel = (req, res) => {
 		res.redirect(303, `/board/view/${id}`);
 	});
 };
+
 //####################게시판 - 좋아요####################
