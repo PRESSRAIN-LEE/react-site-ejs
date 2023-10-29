@@ -27,17 +27,19 @@
 - 아이디 찾기 / 비번 초기화
 - 게시글에 좋아요 (카운트)
 - 출석(캘린더)
-- 포인트 기능
+- 포인트 기능(로그인 출첵 포인트, 캘린더 출첵 포인트)
+- 포인트 사용 기능(실제로 사용한다는 가정하에 진행 (시용포인트 입력방식))
 
 `2. 관리자 기능`
 - 로그인(관리자)
 - 로그인 정보수정
 - 회원 관리(CRUD)
-- 게시판 관리(CRUD,답변, 좋아요)
+- 게시판 관리(CRUD, 답변, 좋아요)
 - 포인트 관리(포인트 가감)
 
-
-
+`3` 공통 기능
+- 공통단 만들기
+- Tansaction 처리
 
 
 
@@ -59,9 +61,13 @@
 3-5. 게시판 댓글 목록
 3-6. 게시판 댓글 쓰기
 3-7. 게시판 댓글 삭제
+3-8. 게시판 히스토리(CRUD...)
+
+
 
 `3` 관리자 기능
 
+`4` 공통 기능
 
 ## react-express, nodejs, ejs
 1. npx create-react-app react-site-ejs
@@ -73,6 +79,8 @@
 7. npm install --save express-fileupload 	//첨부파일 (https://www.youtube.com/watch?v=hyJiNTFtQic)
 8. npm install --save fs mime iconv-lite	//파일 다운로드 관련 3총사
 9. npm install --save connect-flash
+10. npm install --save uuid		//파일 업로드 유니크
+
 
 
 
