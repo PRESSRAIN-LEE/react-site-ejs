@@ -29,6 +29,7 @@ exports.loginProc = (req, res) => {
 	const sql = `SELECT * 
 	FROM TBL_MEMBER
 	WHERE 1 = 1 
+	AND M_AUTH = 1 
 	AND M_ID = ?`;
 	db.query(sql, [memberID], (err, result) => {
 		//if(err) return res.json({err, Message: "Error"});
@@ -226,9 +227,9 @@ exports.myInfo = (req, res) => {
 	FROM TBL_MEMBER
 	WHERE 1 = 1 
 	AND M_SEQ = ?`;
-	db.query(sql, [mSeq], (err, rows, next) => {
+	db.query(sql, [mSeq], (err, result, next) => {
 		if(!err){
-			res.render('../views/member/myInfo', { rows });
+			res.render('../views/member/myInfo', { result: result[0] });
 		}else{
 			console.log(err);
 		}
@@ -245,7 +246,7 @@ exports.myInfoProc = (req, res) => {
 	
 	const sql = `UPDATE TBL_MEMBER SET M_PASS = ?, M_NAME = ?, M_MAIL = ? 
 	WHERE M_SEQ = ? `
-	db.query(sql, [encryptedPW, memberName, memberMail, mSeq], (err, results, next) => {
+	db.query(sql, [encryptedPW, memberName, memberMail, mSeq], (err, result, next) => {
 		if(!err){
 			//res.redirect('/member/myInfo');
 			req.session.alertMsg = {
@@ -263,12 +264,44 @@ exports.myInfoProc = (req, res) => {
 
 		}
 		res.redirect(303, '/member/myInfo');
-		console.log("완료:", results);
+		console.log("완료:", result);
 	});
 };
 
-
-//회원탈퇴
+//회원탈퇴 페이지
 exports.withdraw = (req, res) => {
-	res.send("withdraw");
+	const mSeq = req.session.M_SEQ;
+	const sql = `SELECT * 
+	FROM TBL_MEMBER
+	WHERE 1 = 1 
+	AND M_SEQ = ?`;
+	db.query(sql, [mSeq], (err, result, next) => {
+		if(!err){
+			res.render('../views/member/withdraw', { result: result[0] });
+		}else{
+			console.log(err);
+		}
+	});
+};
+
+//회원탈퇴 처리
+exports.withdrawProc = (req, res) => {
+	const { memberSeq, memberId, withdrawReason } = req.body;
+
+	const sql = `UPDATE TBL_MEMBER SET M_AUTH = 0, M_WITHDRAWAL_DATE = now(), M_WITHDRAWAL_REASON = ? 
+	WHERE M_SEQ = ? `
+	db.query(sql, [withdrawReason, memberSeq], (err, result, next) => {
+		if(!err){
+			req.session.destroy();
+			res.send("<script>alert('탈퇴 되었습니다.');location.href='/'</script>");
+		}else{
+			console.log(err);
+			req.session.alertMsg = {
+				type: 'danger',
+				intro: '[ERROR]',
+				message: '에러가 발생하였습니다.<br/>다시 시도 하세요',
+			};
+			res.redirect(303, '/member/withdraw');
+		}
+	});
 };
