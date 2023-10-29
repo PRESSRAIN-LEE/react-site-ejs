@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');		//env
 const session = require('express-session');
 const connectFlash = require('connect-flash');
+const fileupload = require('express-fileupload');
 
 const app = express();
 dotenv.config();
@@ -13,6 +14,14 @@ dotenv.config();
 const port = process.env.PORT || 5002;
 const secret = process.env.SESSION_SECRET || '시크릿 키';
 
+//파일 업로드
+//app.use(fileupload());
+app.use(fileupload({
+	defCharset: 'utf8',
+    defParamCharset: 'utf8'
+	//safeFileNames: true,
+	//preserveExtension: true
+}));
 
 //세션
 app.use(session({
