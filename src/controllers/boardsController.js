@@ -11,7 +11,7 @@ const fs = require('fs');
 const mysqlConn = require('../../db/DbConn')();
 const db = mysqlConn.init();
 
-const boardInsert = require('../module/board/boardHistory');	//모듈을 폴더로불러온다.
+const boardInsert = require('../modules/board/boardHistory');	//모듈을 폴더로불러온다.
 
 //####################게시판####################
 //리스트
@@ -46,7 +46,7 @@ exports.list = (req, res) => {
 		startLimit = (page - 1) * pageSize; // 1페이지는 무조건 0부터 시작
 	}
 
-	let sql = "SELECT id, ref_level, ref_step, board_title, board_read, board_file1, board_file2, DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at";
+	let sql = "SELECT id, ref_level, ref_step, board_title, board_read, board_file1, board_file2,  AS created_at";
 	sql += ", M_ID, M_NAME ";
 	sql += ", (SELECT COUNT(*) FROM TBL_BOARD_COMMENT WHERE B_SEQ = A.id AND BC_STATE = 'U') AS COMMENT_CNT ";
 	sql += "FROM TBL_BOARD A INNER JOIN TBL_MEMBER B ON A.member_seq = B.M_SEQ "
@@ -604,7 +604,7 @@ exports.replyProc = (req, res) => {
 				message: '글이 등록되었습니다.',
 			};
 			
-			console.log(req.session.alertMsg);
+			//console.log(req.session.alertMsg);
 
 			res.redirect(303, '/board');
 			//console.log("results: ", results)
