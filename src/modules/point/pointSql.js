@@ -53,6 +53,9 @@ exports.fnPointInsert = function(WORK_TYPE, val1,	val2,		val3,			val4="") {
 			pointType = "I";
 			break;
 		case "ATTEND":	//출석
+			pointMemo = "출석체크";
+			pointPart = "2";
+			pointType = "I";
 			break;
 		case "99":	//관리자 직권
 			pointMemo = val4;
