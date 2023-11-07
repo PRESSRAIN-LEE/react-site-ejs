@@ -1,10 +1,17 @@
 <%- include('../includes/head.ejs')%>
+<style>
+	.ck-editor__editable { height: 400px; }
+	.ck-content { font-size: 12px; }
+</style>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/translations/ko.js"></script>
+
 <script src="/js/board.js" defer></script>
 </head>
 <body>
 	<%- include('../includes/navbar.ejs')%>
 	<main>
-		
 		<div class="container">
 			<h3>게시판</h3>
 			<form name="frm" method="POST" action="/board/edit/<%=result.id%>" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
@@ -24,7 +31,7 @@
 
 				<div class="form-floating mb-3">
 					<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용"><%=result.board_content%></textarea>
-					<label for="boardMemo" class="form-label">글 내용</label>
+					<!-- <label for="boardMemo" class="form-label">글 내용</label> -->
 					<div class="invalid-feedback">내용을 입력하세요.</div>
 				</div>
 
@@ -58,8 +65,22 @@
 				</div>
 			</form>
 		</div>
-	
 	</main>
+
+<script>
+	ClassicEditor
+		.create(document.querySelector('#boardMemo'), {
+			language: 'ko',
+			ckfinder: {
+				uploadUrl: '/board/uploader',
+				withCredentials: true,
+			}
+		})
+		.catch(error => {
+			//console.log("error");
+			console.error(error);
+		});
+</script>
 
 <script>
 	// Example starter JavaScript for disabling form submissions if there are invalid fields

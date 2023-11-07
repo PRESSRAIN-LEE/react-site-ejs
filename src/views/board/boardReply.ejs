@@ -1,4 +1,11 @@
 <%- include('../includes/head.ejs')%>
+<style>
+	.ck-editor__editable { height: 400px; }
+	.ck-content { font-size: 12px; }
+</style>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/translations/ko.js"></script>
 </head>
 <body>
 	<%- include('../includes/navbar.ejs')%>
@@ -6,16 +13,16 @@
 		<div class="container">
 			<h3>게시판 글쓰기</h3>
 			<form name="frm" method="POST" action="/board/reply/<%=result.id%>" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
-				<input type="TEXT" id="memberSeq" name="memberSeq"
+				<input type="HIDDEN" id="memberSeq" name="memberSeq"
 				<% if (isLogin){ %>
 				 	value="<%= loginSeq%>"
 				<%} else {%>
 				  	value="<%=result.member_seq%>"
 				<%}%>
 				>
-				<input type="TEXT" id="ref" name="ref" value="<%=result.ref%>">
-				<input type="TEXT" id="ref_level" name="ref_level" value="<%=result.ref_level%>">
-				<input type="TEXT" id="ref_step" name="ref_step" value="<%=result.ref_step%>">
+				<input type="HIDDEN" id="ref" name="ref" value="<%=result.ref%>">
+				<input type="HIDDEN" id="ref_level" name="ref_level" value="<%=result.ref_level%>">
+				<input type="HIDDEN" id="ref_step" name="ref_step" value="<%=result.ref_step%>">
 
 				<div class="col-md-6 form-floating">
 					<input type="text" class="form-control" id="memberName" name="memberName" 
@@ -37,7 +44,7 @@
 
 				<div class="form-floating mb-3">
 					<textarea class="form-control" id="boardMemo" name="boardMemo" required placeholder="글 내용"><%- result.board_content%></textarea>
-					<label for="boardMemo" class="form-label">글 내용</label>
+					<!-- <label for="boardMemo" class="form-label">글 내용</label> -->
 					<div class="invalid-feedback">내용을 입력하세요.</div>
 				</div>
 
@@ -55,6 +62,21 @@
 			</form>
 		</div>
 	</main>
+
+<script>
+	ClassicEditor
+		.create(document.querySelector('#boardMemo'), {
+			language: 'ko',
+			ckfinder: {
+				uploadUrl: '/board/uploader',
+				withCredentials: true,
+			}
+		})
+		.catch(error => {
+			//console.log("error");
+			console.error(error);
+		});
+</script>
 
 <script>
 	(() => {

@@ -27,6 +27,18 @@ const express = require('express');
 
 const boardsController = require('../controllers/boardsController');
 
+
+const path = require('path');
+const uploadDir = path.join(__dirname, '../../upload/board');
+const { v4: uuidv4 } = require('uuid');
+var mime = require('mime');
+const fs = require('fs');
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
+
+//var path = require('path');
+//var uuid = require('uuidv4');
+
 const router = express.Router();
 
 // router.get('/', (req, res) => {
@@ -84,5 +96,34 @@ router.get('/good/:id', boardsController.goodLike);
 //좋아요 취소
 router.get('/goodCancel/:id', boardsController.goodLikeCancel);
 //####################게시판 - 좋아요####################
+
+router.post('/uploader', boardsController.editorFile);
+//console.log("multipartMiddleware: ", multipartMiddleware);
+/*
+router.post('/uploader', function (req, res) {
+	console.log("multipartMiddleware");
+
+	//var fs = require('fs');
+	var orifilepath = req.files.upload.path;
+	var orifilename = req.files.upload.name;
+	
+	//var srvfilename = uuidv4() + path.extname(orifilename);
+	var srvfilename = `${uuidv4()}${path.extname(orifilename.name)}`;
+
+	console.log("orifilename: ", orifilename);
+	fs.readFile(orifilepath, function (err, data) {
+		//var newPath = __dirname + '/../public/uploads/' + srvfilename;
+		var newPath = uploadDir + "/editor/" + srvfilename;
+		fs.writeFile(newPath, data, function (err) {
+			// if (err) console.log({ err: err });
+			// else {
+			//     html = "{\"filename\" : \"" + orifilename + "\", \"uploaded\" : 1, \"url\": \"/uploads/" + srvfilename + "\"}"
+			// 	console.log(html)
+			// 	res.send(html);
+			// }
+		});
+	});
+});
+*/
 
 module.exports = router;

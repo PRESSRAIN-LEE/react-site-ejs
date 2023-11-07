@@ -3,9 +3,15 @@
 //파일 업로드 / 다운로드
 const path = require('path');
 const uploadDir = path.join(__dirname, '../../upload/board');
+const uploadEditorDir = path.join(__dirname, '../../public/upload/editor');
+//console.log("uploadEditorDir: ", uploadEditorDir);
+
 const { v4: uuidv4 } = require('uuid');
 var mime = require('mime');
 const fs = require('fs');
+
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
 
 //DB연결 설정
 const mysqlConn = require('../../db/DbConn')();
@@ -46,7 +52,7 @@ exports.list = (req, res) => {
 		startLimit = (page - 1) * pageSize; // 1페이지는 무조건 0부터 시작
 	}
 
-	let sql = "SELECT id, ref_level, ref_step, board_title, board_read, board_file1, board_file2,  AS created_at";
+	let sql = "SELECT id, ref_level, ref_step, board_title, board_read, board_file1, board_file2, DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at";
 	sql += ", M_ID, M_NAME ";
 	sql += ", (SELECT COUNT(*) FROM TBL_BOARD_COMMENT WHERE B_SEQ = A.id AND BC_STATE = 'U') AS COMMENT_CNT ";
 	sql += "FROM TBL_BOARD A INNER JOIN TBL_MEMBER B ON A.member_seq = B.M_SEQ "
@@ -724,3 +730,66 @@ exports.goodLikeCancel = (req, res) => {
 };
 
 //####################게시판 - 좋아요####################
+
+//####################게시판 - 글쓰기 에디터 이미지 업로드####################
+exports.editorFile = (req, res) => {
+	if (!req.files || Object.keys(req.files).length === 0) {
+		return res.status(400).send("No files were uploaded.");
+	  }
+	  let file = req.files.upload;
+	  //let orifilename = req.files.upload.name;
+	  let srvfilename = uuidv4() + path.extname(file.name);
+	  //let uploadPath = __dirname + "/../public/uploads/" + file.name;
+	  //console.log("srvfilename: ", srvfilename);
+
+	  let uploadPath = uploadEditorDir + "/" + srvfilename;
+	  //console.log("uploadPath: ", uploadPath);
+
+	  file.mv(uploadPath, function (err) {
+		if (err) return res.status(500).send(err);
+
+		if (err) console.log({ err: err });
+		else {
+			let html = "{\"filename\" : \"" + srvfilename + "\", \"uploaded\" : true, \"url\": \"/upload/editor/" + srvfilename + "\", \"message\": \"완료\"}"
+			//console.log("html: ", html)
+			res.send(html);
+		}
+
+		//  res.status(200).json({
+		// 	filename: srvfilename,
+		// 	uploaded: true,
+		// 	url: `/upload/board/editor/${srvfilename}`,
+		//  });
+
+		// html = "{\"filename\" : \"" + srvfilename + "\", \"uploaded\" : 1, \"url\": \"upload/editor/" + srvfilename + "\"}"
+		// console.log(html)
+		// res.send(html);
+	  });
+
+
+ 	// //var fs = require('fs');
+ 	// var orifilepath = req.files.upload.path;
+ 	// var orifilename = req.files.upload.name;
+ 	// var srvfilename = uuidv4() + path.extname(orifilename);
+ 	// console.log("orifilename: ", orifilename);
+ 	// console.log("srvfilename: ", srvfilename);
+
+	// const data = {
+	// 	a: 'hello',
+	// 	b: '안녕하세요?'
+	// }
+ 	// fs.readFile(srvfilename, function (err, data) {
+ 	// 	//var newPath = __dirname + '/../public/uploads/' + srvfilename;
+ 	// 	var newPath = uploadDir + "/" + srvfilename;
+	// 	console.log("newPath: ", newPath);
+	// 	fs.writeFile(newPath, JSON.stringify(data), function (err) {
+	// 		if (err) console.log({ err: err });
+	// 		else {
+	// 		    html = "{\"filename\" : \"" + srvfilename + "\", \"uploaded\" : 1, \"url\": \"upload/editor/" + srvfilename + "\"}"
+	// 			console.log(html)
+	// 			res.send(html);
+	// 		}
+	// 	});
+ 	// });
+};
+//####################게시판 - 글쓰기 에디터 이미지 업로드####################
